@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manutenção de Produtos</title>
+    <title>Cadastramento de Produtos</title>
 
     <!-- Inclua o React e o ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
@@ -24,7 +24,7 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #8f5aea;
             margin: 0;
             padding: 20px;
             color: #333;
@@ -40,12 +40,27 @@
             border-radius: 8px;
         }
 
-        h1 {
-            color: var(--primary-color);
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 25px;
-            font-weight: 600;
             border-bottom: 1px solid #eee;
             padding-bottom: 10px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-icon {
+            width: 70px;
+            height: 70px;
+            margin-left: 400px;
         }
 
         form {
@@ -321,7 +336,16 @@
         render() {
             return (
                 <div className="container">
-                    <h1>Cadastramento de Produtos</h1>
+                    <div className="header-container">
+                        <h1>
+                            Cadastramento de Produtos
+                            <img 
+                                src="https://cdn-icons-png.flaticon.com/512/17175/17175556.png" 
+                                alt="Ícone de cadastro" 
+                                className="header-icon"
+                            />
+                        </h1>
+                    </div>
                     
                     <div className="form-section">
                         <div className="form-title">Cadastrar Novo Produto</div>
