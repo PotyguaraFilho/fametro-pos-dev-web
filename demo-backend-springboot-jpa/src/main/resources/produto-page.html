@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manutenção de Produtos</title>
+
+    <!-- Inclua o React e o ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+
+    <style>
+        /* Estilos melhorados - simplista e elegante */
+        :root {
+            --primary-color: #8a43ee;
+            --secondary-color: #9337c9;
+            --danger-color: #f72585;
+            --success-color: #4cc9f0;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-weight: 600;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        form {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(170, 67, 238, 0.2);
+        }
+
+        .input-medium {
+            width: 100%;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            background-color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        li:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .edit-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Estilo para os botões */
+        .btn-remover {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-cadastrar {
+            background-color: var(--primary-color);
+            color: white;
+        }       
+        
+        .btn-salvar {
+            background-color: var(--success-color);
+            color: white;
+        }           
+        
+        .btn-editar {
+            background-color: var(--secondary-color);
+            color: white;
+        }       
+        
+        .btn-cancelar {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .product-info {
+            margin-bottom: 10px;
+        }
+        
+        .product-info strong {
+            color: #555;
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+        }
+        
+        .form-title {
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+<script type="text/babel">
+
+    class ProdutoPageComponent extends React.Component {
+        constructor() {
+            super();
+            this.state = {
+                produtos: [],
+                novoProduto: {
+                    nomeProduto: '',
+                    descricaoProduto: '',
+                    dataProduto: ''
+                },
+                produtoEmEdicao: null
+            };
+        }
+
+        componentDidMount() {
+            this.fetchProdutos();
+        }
+
+        async fetchProdutos() {
+            try {
+                const response = await fetch('http://localhost:8080/v1/produtos');
+                if (response.ok) {
+                    const data = await response.json();
+                    this.setState({ produtos: data });
+                } else {
+                    console.error('Erro ao buscar os produtos.');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar os produtos:', error);
+            }
+        }
+
+        async cadastrarProduto() {
+            try {
+                // Validação dos campos antes de enviar
+                if (!this.state.novoProduto.nomeProduto || !this.state.novoProduto.descricaoProduto) {
+                    alert('Por favor, preencha todos os campos obrigatórios');
+                    return;
+                }
+
+                const formattedValue3 = this.formatarDataHora(this.state.novoProduto.dataProduto);
+                
+                const response = await fetch('http://localhost:8080/v1/produtos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nomeProduto: this.state.novoProduto.nomeProduto,
+                        descricaoProduto: this.state.novoProduto.descricaoProduto,
+                        dataProduto: formattedValue3
+                    }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Atualiza a lista e limpa o formulário
+                this.fetchProdutos();
+                this.setState({
+                    novoProduto: {
+                        nomeProduto: '',
+                        descricaoProduto: '',
+                        dataProduto: ''
+                    }
+                });
+                
+                alert('Produto cadastrado com sucesso!');
+
+            } catch (error) {
+                console.error('Erro detalhado:', error);
+                alert(`Erro ao cadastrar produto: ${error.message}`);
+            }
+        }
+
+        async removerProduto(id) {
+            try {
+                const response = await fetch(`http://localhost:8080/v1/produtos/${id}`, {
+                    method: 'DELETE',
+                });
+                if (response.ok) {
+                    this.fetchProdutos();
+                } else {
+                    console.error('Erro ao remover o produto.');
+                }
+            } catch (error) {
+                console.error('Erro ao remover o produto:', error);
+            }
+        }
+
+        async editarProduto() {
+            try {
+                const formattedValue3 = this.formatarDataHora(this.state.produtoEmEdicao.dataProduto);
+                const response = await fetch(`http://localhost:8080/v1/produtos/${this.state.produtoEmEdicao.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ...this.state.produtoEmEdicao,
+                        dataProduto: formattedValue3
+                    }),
+                });
+                if (response.ok) {
+                    this.fetchProdutos();
+                    this.setState({ produtoEmEdicao: null });
+                } else {
+                    console.error('Erro ao editar o produto.');
+                }
+            } catch (error) {
+                console.error('Erro ao editar o produto:', error);
+            }
+        }
+
+        formatarDataHora(dataHora) {
+            const data = new Date(dataHora);
+            const ano = data.getFullYear();
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const dia = String(data.getDate()).padStart(2, '0');
+            const hora = String(data.getHours()).padStart(2, '0');
+            const minuto = String(data.getMinutes()).padStart(2, '0');
+            const segundo = String(data.getSeconds()).padStart(2, '0');
+            return `${ano}-${mes}-${dia}T${hora}:${minuto}:${segundo}`;
+        }
+
+        formatarDataHoraPadraoBR(dataHora) {
+            const data = new Date(dataHora);
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const ano = data.getFullYear();
+            const hora = String(data.getHours()).padStart(2, '0');
+            const minuto = String(data.getMinutes()).padStart(2, '0');
+            const segundo = String(data.getSeconds()).padStart(2, '0');
+            return `${dia}/${mes}/${ano} ${hora}:${minuto}:${segundo}`;
+        }
+
+        render() {
+            return (
+                <div className="container">
+                    <h1>Cadastramento de Produtos</h1>
+                    
+                    <div className="form-section">
+                        <div className="form-title">Cadastrar Novo Produto</div>
+                        <form>
+                            <label>
+                                Nome do Produto:
+                                <input
+                                    type="text"
+                                    value={this.state.novoProduto.nomeProduto}
+                                    onChange={(e) => this.setState({ novoProduto: { ...this.state.novoProduto, nomeProduto: e.target.value } })}
+                                    placeholder="Digite o nome do produto"
+                                />
+                            </label>
+                            
+                            <label>
+                                Descrição:
+                                <input
+                                    type="text"
+                                    value={this.state.novoProduto.descricaoProduto}
+                                    onChange={(e) => this.setState({ novoProduto: { ...this.state.novoProduto, descricaoProduto: e.target.value } })}
+                                    placeholder="Digite a descrição"
+                                />
+                            </label>
+                            
+                            <label>
+                                Data e Hora:
+                                <input
+                                    type="datetime-local"
+                                    className="input-medium"
+                                    value={this.state.novoProduto.dataProduto}
+                                    onChange={(e) => this.setState({ novoProduto: { ...this.state.novoProduto, dataProduto: e.target.value } })}
+                                />
+                            </label>
+                            
+                            <button type="button" className="btn-cadastrar" onClick={() => this.cadastrarProduto()}>
+                                Cadastrar Produto
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div className="form-section">
+                        <div className="form-title">Lista de Produtos</div>
+                        <ul>
+                            {this.state.produtos.map((produto, index) => (
+                                <li key={index}>
+                                    <div className="product-info">
+                                        <strong>Produto:</strong> {produto.nomeProduto}
+                                    </div>
+                                    <div className="product-info">
+                                        <strong>Descrição:</strong> {produto.descricaoProduto}
+                                    </div>
+                                    <div className="product-info">
+                                        <strong>Data:</strong> {this.formatarDataHoraPadraoBR(produto.dataProduto)}
+                                    </div>
+                                    
+                                    <div className="edit-buttons">
+                                        <button className="btn-editar" onClick={() => this.setState({ produtoEmEdicao: produto })}>
+                                            Editar
+                                        </button>
+                                        <button className="btn-remover" onClick={() => this.removerProduto(produto.id)}>
+                                            Remover
+                                        </button>
+                                    </div>
+                                    
+                                    {this.state.produtoEmEdicao && this.state.produtoEmEdicao.id === produto.id && (
+                                        <form style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #eee' }}>
+                                            <label>
+                                                Nome do Produto:
+                                                <input
+                                                    type="text"
+                                                    value={this.state.produtoEmEdicao.nomeProduto}
+                                                    onChange={(e) => this.setState({ produtoEmEdicao: { ...this.state.produtoEmEdicao, nomeProduto: e.target.value } })}
+                                                />
+                                            </label>
+                                            
+                                            <label>
+                                                Descrição:
+                                                <input
+                                                    type="text"
+                                                    value={this.state.produtoEmEdicao.descricaoProduto}
+                                                    onChange={(e) => this.setState({ produtoEmEdicao: { ...this.state.produtoEmEdicao, descricaoProduto: e.target.value } })}
+                                                />
+                                            </label>
+                                            
+                                            <label>
+                                                Data e Hora:
+                                                <input
+                                                    type="text"
+                                                    value={this.state.produtoEmEdicao.dataProduto}
+                                                    onChange={(e) => this.setState({ produtoEmEdicao: { ...this.state.produtoEmEdicao, dataProduto: e.target.value } })}
+                                                    placeholder="Formato: YYYY-MM-DDTHH:MM:SS"
+                                                />
+                                            </label>
+                                            
+                                            <div className="edit-buttons">
+                                                <button className="btn-salvar" type="button" onClick={() => this.editarProduto()}>
+                                                    Salvar Alterações
+                                                </button>
+                                                <button className="btn-cancelar" type="button" onClick={() => this.setState({ produtoEmEdicao: null })}>
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        </form>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+    }
+
+    ReactDOM.render(<ProdutoPageComponent />, document.getElementById('root'));
+
+</script>
+</html>
